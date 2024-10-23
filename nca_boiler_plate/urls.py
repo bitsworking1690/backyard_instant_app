@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 URL configuration for nca_boiler_plate project.
 
@@ -16,8 +17,54 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework_simplejwt.views import TokenRefreshView
+from accounts.views import (
+    RegularTokenObtainPairView,
+    LogoutView,
+    GetTokenDetailsView,
+)
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="APIs",
+        default_version="v1",
+        description="APIs Endpoints with Request/Response Formats",
+        terms_of_service="",
+        contact=openapi.Contact(email="admin@gmail.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+)
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    path(
+        "api/swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
+    path(
+        "api/redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"
+    ),
+    path(
+        "api/v1/auth/token/",
+        RegularTokenObtainPairView.as_view(),
+        name="access_token",
+    ),
+    path(
+        "api/v1/auth/token/refresh/", TokenRefreshView.as_view(), name="refresh_token"
+    ),
+    path("api/v1/auth/logout/", LogoutView.as_view(), name="logout"),
+    path(
+        "api/v1/auth/token/details/",
+        GetTokenDetailsView.as_view(),
+        name="get_token_details",
+    ),
+    path("api/v1/accounts/", include("accounts.urls")),
 ]

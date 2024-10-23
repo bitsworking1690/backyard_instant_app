@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ASGI config for nca_boiler_plate project.
 
