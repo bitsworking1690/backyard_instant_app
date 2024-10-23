@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "import_export",
     "simple_history",
+    "drf_yasg",
+    "drf_api_logger",
 ]
 
 MIDDLEWARE = [
@@ -56,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware",
 ]
 
 ROOT_URLCONF = "nca_boiler_plate.urls"
@@ -185,3 +188,20 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 HASHED_ACCESS_TOKEN_KEY = env("HASHED_ACCESS_TOKEN_KEY")
 
 RESEND_OTP_TIME = env("RESEND_OTP_TIME")
+
+SWAGGER_SETTINGS = {
+    "USE_SESSION_AUTH": False,
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+        },
+    },
+    "SECURITY_REQUIREMENTS": [
+        {"Bearer": []},
+    ],
+}
+
+DRF_API_LOGGER_DATABASE = True
+DRF_API_LOGGER_METHODS = ["POST", "DELETE", "PUT"]
