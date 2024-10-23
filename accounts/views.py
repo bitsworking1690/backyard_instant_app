@@ -41,6 +41,26 @@ class RegularTokenObtainPairView(TokenObtainPairView):
     @transaction.atomic
     @method_decorator(require_json_content_type)
     def post(self, request, *args, **kwargs):
+        """Handle user login and token generation.
+
+        This method overrides the default `post` method to:
+        1. Retrieve the user by their email.
+        2. Assign a new token to the user.
+        3. Check if the user has the 2FA role. If so, it sends an OTP email and returns the response.
+        4. Encrypt the access token and store it in a secure HTTP-only cookie.
+
+        Args:
+            request (HttpRequest): The HTTP request object.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Response: The HTTP response with a JWT token or 2FA OTP data.
+
+        Raises:
+            CustomUser.DoesNotExist: If the user with the given email does not exist.
+        """
+
         response = super().post(request, *args, **kwargs)
         user = CustomUser.objects.get(email=request.data["email"])
         user.token = str(uuid.uuid4())
@@ -84,6 +104,25 @@ class SignUpView(generics.CreateAPIView):
     @transaction.atomic
     @method_decorator(require_json_content_type)
     def post(self, request, *args, **kwargs):
+        """Handle user sign-up and OTP generation.
+
+        This method handles the user sign-up process. It validates the incoming request
+        data using the `CustomUserCreateSerializer`, saves the user data, and generates
+        an OTP. The OTP is sent to the user's registered email address.
+
+        Args:
+            request (HttpRequest): The HTTP request object containing user data.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Response: A response object containing a success message, OTP resend time,
+            and a unique token for the user.
+
+        Raises:
+            ValidationError: If the serializer data is invalid.
+        """
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -109,6 +148,19 @@ class LogoutView(APIView):
         }
     )
     def get(self, request):
+        """
+        Handle the logout process by clearing the user's authentication cookie and blacklisting the JWT token.
+
+        Args:
+            request (HttpRequest): The HTTP request object.
+
+        Returns:
+            Response: A success response confirming the logout process, with the JWT token blacklisted.
+
+        Raises:
+            APIError: If an invalid or expired token is encountered during the process.
+        """
+
         try:
             response = Response(
                 response_data_formating(
@@ -147,6 +199,20 @@ class VerifyOtpView(APIView):
     @transaction.atomic
     @method_decorator(require_json_content_type)
     def post(self, request):
+        """
+        Verify the user's OTP and activate the account if the OTP and token are valid.
+
+        Args:
+            request (HttpRequest): The HTTP request object containing OTP and token data.
+
+        Returns:
+            Response: A success response with a new access token if the OTP is verified.
+            If the OTP verification fails, a 400 response is returned with error details.
+
+        Raises:
+            APIError: If the token provided is invalid or if any other validation errors occur.
+        """
+
         data = {}
         serializer = CheckOTPSerializer(data=request.data)
 
@@ -203,6 +269,19 @@ class ResendOTPView(APIView):
     @transaction.atomic
     @method_decorator(require_json_content_type)
     def post(self, request):
+        """
+        Resend an OTP to the user's registered account if requested.
+
+        Args:
+            request (HttpRequest): The HTTP request object containing user data.
+
+        Returns:
+            Response: A success response indicating that the OTP has been sent to the user's email.
+
+        Raises:
+            APIError: If there are validation errors in the user data.
+        """
+
         serializer = ResendOTPSerializer(data=request.data)
         if serializer.is_valid():
             AccountService.resend_OTP(serializer.data)
@@ -235,6 +314,20 @@ class ProfileView(APIView):
         }
     )
     def get(self, request, pk):
+        """
+        Retrieve the profile details of a user based on their ID (pk).
+
+        Args:
+            request (HttpRequest): The HTTP request object.
+            pk (int): The primary key (ID) of the user whose profile is being requested.
+
+        Returns:
+            Response: A success response containing the user's profile data.
+
+        Raises:
+            APIError: If the user does not exist or the requesting user does not have permission.
+        """
+
         user = self.get_object(pk)
         self.check_object_permissions(request, user)
         serializer = ProfileSerializer(user)
@@ -254,6 +347,21 @@ class ProfileView(APIView):
     @method_decorator(require_json_content_type)
     @transaction.atomic
     def put(self, request, pk):
+        """
+        Update the profile information of a user based on their ID (pk).
+
+        Args:
+            request (HttpRequest): The HTTP request object containing the updated profile data.
+            pk (int): The primary key (ID) of the user whose profile is being updated.
+
+        Returns:
+            Response: A success response with the updated profile data if the operation is successful.
+            A 400 error response if validation fails.
+
+        Raises:
+            APIError: If the user does not exist or the requesting user does not have permission.
+        """
+
         user = self.get_object(pk)
         self.check_object_permissions(request, user)
         serializer = ProfileSerializer(user, data=request.data, partial=True)
@@ -280,6 +388,19 @@ class GetTokenDetailsView(APIView):
         }
     )
     def get(self, request):
+        """
+        Retrieve details of the token stored in the user's cookies.
+
+        Args:
+            request (HttpRequest): The HTTP request object containing the access token in cookies.
+
+        Returns:
+            Response: A success response with decoded token payload details.
+
+        Raises:
+            APIError: If the token is invalid or has expired.
+        """
+
         try:
             jwt_token = request.COOKIES.get("access")
             hashed_key = Fernet(settings.HASHED_ACCESS_TOKEN_KEY)
