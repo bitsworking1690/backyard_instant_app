@@ -4,6 +4,7 @@ from rest_framework import serializers
 from accounts.models import CustomUser
 from accounts.services import AccountService
 from utils.serializers import CustomBaseModelSerializer, CustomBaseSerializer
+from utils.validators import custom_password_validator
 
 
 class RegularTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -22,6 +23,14 @@ class CustomUserCreateSerializer(CustomBaseModelSerializer):
         fields = ["email", "password", "password2", "first_name", "last_name", "gender"]
 
     def validate(self, data):
+        if data["email"] == data["password"]:
+            raise serializers.ValidationError("Password can not be same as email")
+        if not custom_password_validator(data["password"]):
+            raise serializers.ValidationError(
+                "Length must be between 8 to 15 characters, should not contain more than 3 "
+                "repeated characters consecutively, and at least contains one uppercase, lowercase and "
+                "special characters."
+            )
         if data["password"] != data["password2"]:
             raise serializers.ValidationError({"password": "Passwords must match."})
         return data
