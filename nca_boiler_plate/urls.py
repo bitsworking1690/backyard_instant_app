@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 URL configuration for nca_boiler_plate project.
 
@@ -52,14 +53,18 @@ urlpatterns = [
         "api/redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"
     ),
     path(
-        "api/v1/auth/token/", RegularTokenObtainPairView.as_view(), name="access_token",
+        "api/v1/auth/token/",
+        RegularTokenObtainPairView.as_view(),
+        name="access_token",
     ),
-    path("api/v1/auth/token/refresh/", TokenRefreshView.as_view(), name="refresh_token"),
+    path(
+        "api/v1/auth/token/refresh/", TokenRefreshView.as_view(), name="refresh_token"
+    ),
     path("api/v1/auth/logout/", LogoutView.as_view(), name="logout"),
     path(
         "api/v1/auth/token/details/",
         GetTokenDetailsView.as_view(),
         name="get_token_details",
     ),
-    path("api/v1/accounts/", include("accounts.urls")), 
+    path("api/v1/accounts/", include("accounts.urls")),
 ]

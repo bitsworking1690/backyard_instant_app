@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from rest_framework_simplejwt import authentication as jwt_authentication
 from django.conf import settings
 from cryptography.fernet import Fernet

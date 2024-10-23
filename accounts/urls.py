@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.urls import path
 from accounts.views import (
     SignUpView,
@@ -9,7 +10,7 @@ from accounts.views import (
 
 urlpatterns = [
     path("signup/", SignUpView.as_view(), name="signup"),
-    path("verify-otp/",VerifyOtpView.as_view(),name="verify-otp"),
+    path("verify-otp/", VerifyOtpView.as_view(), name="verify-otp"),
     path("resend-otp/", ResendOTPView.as_view(), name="resend-otp"),
-    path('profile/<int:pk>/', ProfileView.as_view(), name='user-profile'),
+    path("profile/<int:pk>/", ProfileView.as_view(), name="user-profile"),
 ]

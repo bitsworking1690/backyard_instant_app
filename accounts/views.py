@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import uuid
 from django.conf import settings
 from rest_framework import status
@@ -49,10 +50,7 @@ class RegularTokenObtainPairView(TokenObtainPairView):
             data = AccountService.sendOTPEmail(user)
             data["token"] = user.token
             return Response(
-                data=response_data_formating(
-                    generalMessage="success", 
-                    data=data
-                ),
+                data=response_data_formating(generalMessage="success", data=data),
                 status=status.HTTP_200_OK,
             )
 
@@ -81,7 +79,7 @@ class SignUpView(generics.CreateAPIView):
         responses={
             201: openapi.Response("Successful response", SignUpResponseSerializer),
             400: openapi.Response("Error response", ErrorResponseSerializer),
-        }
+        },
     )
     @transaction.atomic
     @method_decorator(require_json_content_type)
@@ -91,15 +89,12 @@ class SignUpView(generics.CreateAPIView):
         user = serializer.save()
 
         data = {
-            'message': "OTP has been sent to your registered account",
-            'otp_time': settings.RESEND_OTP_TIME,
-            'token': user.token
+            "message": "OTP has been sent to your registered account",
+            "otp_time": settings.RESEND_OTP_TIME,
+            "token": user.token,
         }
         return Response(
-            data=response_data_formating(
-                generalMessage="success", 
-                data=data
-            ),
+            data=response_data_formating(generalMessage="success", data=data),
             status=status.HTTP_200_OK,
         )
 
@@ -136,9 +131,7 @@ class LogoutView(APIView):
             BlacklistedToken.objects.create(token=token)
             return response
         except Exception as error:
-            raise APIError(
-                Error.DEFAULT_ERROR, extra=[f"Invalid token {error}"]
-            )
+            raise APIError(Error.DEFAULT_ERROR, extra=[f"Invalid token {error}"])
 
 
 class VerifyOtpView(APIView):
@@ -149,7 +142,7 @@ class VerifyOtpView(APIView):
         responses={
             200: openapi.Response("Successful response", CheckOTPSerializer),
             400: openapi.Response("Error response", ErrorResponseSerializer),
-        }
+        },
     )
     @transaction.atomic
     @method_decorator(require_json_content_type)
@@ -164,7 +157,7 @@ class VerifyOtpView(APIView):
 
             if data["token"] != str(user.token):
                 raise APIError(Error.DEFAULT_ERROR, extra=["Token not valid"])
-            
+
             if not user.is_active:
                 user.is_active = True
                 user.save()
@@ -205,7 +198,7 @@ class ResendOTPView(APIView):
         responses={
             200: openapi.Response("Successful response", ResendOTPResponseSerializer),
             400: openapi.Response("Error response", ErrorResponseSerializer),
-        }
+        },
     )
     @transaction.atomic
     @method_decorator(require_json_content_type)
@@ -220,10 +213,7 @@ class ResendOTPView(APIView):
         data["message"] = "OTP has been sent to your registered account"
 
         return Response(
-            data=response_data_formating(
-                generalMessage="success", 
-                data=data
-            ),
+            data=response_data_formating(generalMessage="success", data=data),
             status=status.HTTP_200_OK,
         )
 
@@ -252,14 +242,14 @@ class ProfileView(APIView):
             response_data_formating(generalMessage="success", data=serializer.data),
             status=status.HTTP_200_OK,
         )
-    
+
     @swagger_auto_schema(
         request_body=ProfileSerializer,
         responses={
             200: openapi.Response("Successful response", ProfileSerializer),
             400: openapi.Response("Error response", ErrorResponseSerializer),
             403: openapi.Response("Forbidden"),
-        }
+        },
     )
     @method_decorator(require_json_content_type)
     @transaction.atomic
@@ -298,8 +288,6 @@ class GetTokenDetailsView(APIView):
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             data = response_data_formating(generalMessage="success", data=payload)
         except Exception:
-            raise APIError(
-                Error.DEFAULT_ERROR, extra=["Invalid or expired token"]
-            )
+            raise APIError(Error.DEFAULT_ERROR, extra=["Invalid or expired token"])
 
         return Response(data=data, status=status.HTTP_200_OK)

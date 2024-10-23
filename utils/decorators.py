@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from functools import wraps
 from django.http import JsonResponse
 from rest_framework import status

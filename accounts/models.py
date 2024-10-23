@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager
 from utils.enums import Enums
 from utils.models import BaseModel
@@ -8,16 +8,15 @@ import uuid
 from simple_history.models import HistoricalRecords
 
 
-
 class Module(BaseModel):
     name = models.CharField(max_length=64, unique=True)
 
     class Meta:
         ordering = ("-id",)
-    
+
     def __str__(self):
         return self.name
-    
+
     def save(self, *args, **kwargs):
         self.name = self.name.lower()
         return super().save(*args, **kwargs)
@@ -28,12 +27,12 @@ class Permission(BaseModel):
     module = models.ForeignKey(Module, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('name', 'module')
+        unique_together = ("name", "module")
         ordering = ("-id",)
 
     def __str__(self):
         return f"{self.name} ({self.module.name})"
-    
+
     def save(self, *args, **kwargs):
         self.name = self.name.lower()
         return super().save(*args, **kwargs)
@@ -41,14 +40,14 @@ class Permission(BaseModel):
 
 class Role(BaseModel):
     name = models.CharField(max_length=64, unique=True)
-    permissions = models.ManyToManyField(Permission, related_name='roles', blank=True)
+    permissions = models.ManyToManyField(Permission, related_name="roles", blank=True)
 
     class Meta:
         ordering = ("-id",)
 
     def __str__(self):
         return self.name
-    
+
     def save(self, *args, **kwargs):
         self.name = self.name.lower()
         return super().save(*args, **kwargs)
@@ -89,20 +88,16 @@ class UserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    USER_GENDER_CHOICES = (
-        (Enums.MALE.value, "Male"),
-        (Enums.FEMALE.value, "Female")
-    )
+    USER_GENDER_CHOICES = ((Enums.MALE.value, "Male"), (Enums.FEMALE.value, "Female"))
 
     username = None
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64)
     gender = models.PositiveSmallIntegerField(
-        choices=USER_GENDER_CHOICES,
-        default=Enums.MALE.value
+        choices=USER_GENDER_CHOICES, default=Enums.MALE.value
     )
-    role = models.ManyToManyField(Role, related_name='users', blank=True)
+    role = models.ManyToManyField(Role, related_name="users", blank=True)
     token = models.UUIDField(default=uuid.uuid4, unique=True)
 
     USERNAME_FIELD = "email"
@@ -131,8 +126,7 @@ class EmailOtp(BaseModel):
     otp = models.CharField(max_length=4)
     is_valid = models.BooleanField(default=False)
     stage = models.PositiveSmallIntegerField(
-        choices=OTP_STAGES,
-        default=Enums.SIGN_UP.value
+        choices=OTP_STAGES, default=Enums.SIGN_UP.value
     )
 
     class Meta:

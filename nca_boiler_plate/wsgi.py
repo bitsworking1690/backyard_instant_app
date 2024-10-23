@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 WSGI config for nca_boiler_plate project.
 
