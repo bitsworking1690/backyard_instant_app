@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-WSGI config for nca_boiler_plate project.
+WSGI config for backyard_boiler_plate project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -12,6 +12,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "nca_boiler_plate.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backyard_boiler_plate.settings")
 
 application = get_wsgi_application()

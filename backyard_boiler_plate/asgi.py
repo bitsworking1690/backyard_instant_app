@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ASGI config for nca_boiler_plate project.
+ASGI config for backyard_boiler_plate project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -12,6 +12,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "nca_boiler_plate.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backyard_boiler_plate.settings")
 
 application = get_asgi_application()
