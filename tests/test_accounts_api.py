@@ -2,7 +2,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework import status
-from accounts.models import CustomUser, EmailOtp
+from accounts.models import CustomUser, EmailOtp, Module, Permission, Role
 from django.conf import settings
 from utils.enums import Enums
 
@@ -255,3 +255,315 @@ class TestProfileView:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.json()["message"] == "error"
         assert response.json()["error"] == ["User not Exist"]
+
+
+@pytest.mark.django_db
+class TestModuleEndpoints:
+    """
+    Test cases for the Module endpoints.
+    """
+
+    def setup_method(self):
+        """
+        Set up method to create instances for testing.
+        """
+
+        self.module = Module.objects.create(name="Test Module")
+
+    def test_get_module_list(self, client, user_login):
+        """
+        Test retrieving module list should return 200 OK.
+        """
+
+        url = reverse("module-list-create")
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_create_module(self, client, user_login):
+        """
+        Test to create module obj should return 201 Created.
+        """
+
+        url = reverse("module-list-create")
+        data = {"name": "Test Module 2"}
+        response = client.post(url, data, content_type="application/json")
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.json()["name"] == "test module 2"
+
+    def test_get_module_detail(self, client, user_login):
+        """
+        Test to get module obj should return 200 OK.
+        """
+
+        url = reverse("module-detail", args=[self.module.id])
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["name"] == self.module.name
+
+    def test_update_module(self, client, user_login):
+        """
+        Test to update module obj should return 200 OK.
+        """
+
+        url = reverse("module-detail", args=[self.module.id])
+        data = {"name": "Updated Module"}
+        response = client.put(url, data, content_type="application/json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["name"] == "updated module"
+
+    def test_delete_module(self, client, user_login):
+        """
+        Test to delete module obj should return 204 No Content.
+        """
+
+        url = reverse("module-detail", args=[self.module.id])
+        response = client.delete(url)
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.django_db
+class TestPermissionEndpoints:
+    """
+    Test cases for the Permission endpoints.
+    """
+
+    def setup_method(self):
+        """
+        Set up method to create instances for testing.
+        """
+
+        self.module = Module.objects.create(name="Test Module")
+        self.permission = Permission.objects.create(name="can_view", module=self.module)
+
+    def test_get_permission_list(self, client, user_login):
+        """
+        Test retrieving permission list should return 200 OK.
+        """
+
+        url = reverse("permission-list-create")
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_create_permission(self, client, user_login):
+        """
+        Test to create permission obj should return 201 Created.
+        """
+
+        url = reverse("permission-list-create")
+        data = {"name": "Test Permission", "module": self.module.id}
+        response = client.post(url, data, content_type="application/json")
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.json()["name"] == "test permission"
+        assert response.json()["module"] == self.module.id
+
+    def test_get_permission_detail(self, client, user_login):
+        """
+        Test to get permission obj should return 200 OK.
+        """
+
+        url = reverse("permission-detail", args=[self.permission.id])
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["name"] == self.permission.name
+
+    def test_update_permission(self, client, user_login):
+        """
+        Test to update permission obj should return 200 OK.
+        """
+
+        url = reverse("permission-detail", args=[self.permission.id])
+        data = {"name": "Updated Permission", "module": self.module.id}
+        response = client.put(url, data, content_type="application/json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["name"] == "updated permission"
+
+    def test_delete_permission(self, client, user_login):
+        """
+        Test to delete permission obj should return 204 No Content.
+        """
+
+        url = reverse("permission-detail", args=[self.permission.id])
+        response = client.delete(url)
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.django_db
+class TestRoleEndpoints:
+    """
+    Test cases for the Role endpoints.
+    """
+
+    def setup_method(self):
+        """
+        Set up method to create instances for testing.
+        """
+
+        self.role = Role.objects.create(name="Test Role")
+        self.module = Module.objects.create(name="Test Module")
+        self.permission1 = Permission.objects.create(
+            name="can_view", module=self.module
+        )
+        self.permission2 = Permission.objects.create(name="can_add", module=self.module)
+
+    def test_get_role_list(self, client, user_login):
+        """
+        Test retrieving role list should return 200 OK.
+        """
+
+        url = reverse("role-list-create")
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_create_role(self, client, user_login):
+        """
+        Test to create role obj should return 201 Created.
+        """
+
+        url = reverse("role-list-create")
+        data = {
+            "name": "Test Role 2",
+            "permissions_ids": [self.permission1.id, self.permission2.id],
+        }
+        response = client.post(url, data, content_type="application/json")
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.json()["name"] == "test role 2"
+
+    def test_get_role_detail(self, client, user_login):
+        """
+        Test to get role obj should return 200 OK.
+        """
+
+        url = reverse("role-detail", args=[self.role.id])
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["name"] == self.role.name
+
+    def test_update_role(self, client, user_login):
+        """
+        Test to update role obj should return 200 OK.
+        """
+
+        url = reverse("role-detail", args=[self.role.id])
+        data = {"name": "Updated Role", "permissions_ids": [self.permission2.id]}
+        response = client.put(url, data, content_type="application/json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["name"] == "updated role"
+
+    def test_delete_role(self, client, user_login):
+        """
+        Test to delete role obj should return 204 No Content.
+        """
+
+        url = reverse("role-detail", args=[self.role.id])
+        response = client.delete(url)
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.django_db
+class TestUserRoleAssignmentEndpoints:
+    """
+    Test cases for the User Role Assignment endpoint.
+    """
+
+    def setup_method(self):
+        """
+        Set up method to create instances for testing.
+        """
+
+        self.user = CustomUser.objects.create_user(
+            email="testuser@example.com",
+            password="testpassword",
+            first_name="Test",
+            last_name="User",
+        )
+        self.role1 = Role.objects.create(name="Admin")
+        self.role2 = Role.objects.create(name="Editor")
+
+    def test_assign_roles_to_user(self, client, user_login):
+        """
+        Test assigning roles to a user should return 200 OK.
+        """
+
+        data = {"role": [self.role1.id, self.role2.id]}
+        url = reverse("user-role-assign-remove", args=[self.user.id])
+        response = client.put(url, data, content_type="application/json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.json()["data"]["role"]) == 2
+
+    def test_remove_all_roles_from_user(self, client, user_login):
+        """
+        Test removing all roles from a user should return 200 OK.
+        """
+
+        self.user.role.set([self.role1, self.role2])
+        data = {"role": []}
+        url = reverse("user-role-assign-remove", args=[self.user.id])
+        response = client.put(url, data, content_type="application/json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.json()["data"]["role"]) == 0
+
+    def test_assign_roles_missing_field(self, client, user_login):
+        """
+        Test assigning roles with missing role field should return 400 Bad Request.
+        """
+
+        url = reverse("user-role-assign-remove", args=[self.user.id])
+        response = client.put(url, {}, content_type="application/json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json()["role"] == "This field is required."
+
+    def test_assign_roles_user_not_found(self, client, user_login):
+        """
+        Test assigning roles to a non-existent user should return 400 Bad Request.
+        """
+
+        url = reverse("user-role-assign-remove", args=[999])
+        data = {"role": [self.role1.id]}
+        response = client.put(url, data, content_type="application/json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "User not Exist" in response.json()["error"]
+
+
+@pytest.mark.django_db
+class TestUserListEndpoints:
+    """
+    Test cases for the User List endpoint.
+    """
+
+    def setup_method(self):
+        """
+        Set up method to create instances for testing.
+        """
+        self.user1 = CustomUser.objects.create_user(
+            email="user1@example.com",
+            password="password1",
+            first_name="User",
+            last_name="One",
+        )
+        self.user2 = CustomUser.objects.create_user(
+            email="user2@example.com",
+            password="password2",
+            first_name="User",
+            last_name="Two",
+        )
+        self.role1 = Role.objects.create(name="Admin")
+        self.role2 = Role.objects.create(name="Viewer")
+        self.user1.role.add(self.role1)
+        self.user2.role.add(self.role2)
+
+    def test_get_user_list(self, client, user_login):
+        """
+        Test retrieving the user list should return 200 OK.
+        """
+        url = reverse("user-list-with-roles")
+        response = client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["data"][1]["email"] == "user2@example.com"
+        assert response.json()["data"][2]["email"] == "user1@example.com"
+        assert response.json()["data"][1]["roles"][0]["name"] == "viewer"
+        assert response.json()["data"][2]["roles"][0]["name"] == "admin"

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
-from accounts.models import CustomUser
+from accounts.models import CustomUser, Role, Permission, Module
 from accounts.services import AccountService
 from utils.serializers import CustomBaseModelSerializer, CustomBaseSerializer
 from utils.validators import custom_password_validator
@@ -80,3 +80,70 @@ class SignUpResponseSerializer(serializers.Serializer):
 
 class ResendOTPResponseSerializer(serializers.Serializer):
     message = serializers.CharField()
+
+
+class ModuleSerializer(CustomBaseModelSerializer):
+    class Meta:
+        model = Module
+        fields = ["id", "name"]
+        read_only_fields = ["id"]
+
+
+class PermissionSerializer(CustomBaseModelSerializer):
+    module_name = serializers.CharField(source="module.name", read_only=True)
+
+    class Meta:
+        model = Permission
+        fields = ["id", "name", "module", "module_name"]
+        read_only_fields = ["id"]
+
+
+class RoleSerializer(CustomBaseModelSerializer):
+    permissions = PermissionSerializer(many=True, read_only=True)
+    permissions_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Permission.objects.all(),
+        source="permissions",
+        many=True,
+        write_only=True,
+    )
+
+    class Meta:
+        model = Role
+        fields = ["id", "name", "permissions", "permissions_ids"]
+        read_only_fields = ["id"]
+
+
+class UserRoleAssignmentSerializer(CustomBaseModelSerializer):
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), many=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ["role"]
+
+    def update(self, instance, validated_data):
+        roles = validated_data.get("role", None)
+
+        if roles is not None:
+            if roles:
+                instance.role.set(roles)
+            else:
+                instance.role.clear()
+            instance.save()
+        else:
+            raise serializers.ValidationError({"role": "This field is required."})
+
+        return instance
+
+
+class UserRoleSerializer(CustomBaseModelSerializer):
+    class Meta:
+        model = Role
+        fields = ["id", "name"]
+
+
+class UserListSerializer(CustomBaseModelSerializer):
+    roles = UserRoleSerializer(many=True, read_only=True, source="role")
+
+    class Meta:
+        model = CustomUser
+        fields = ["id", "email", "first_name", "last_name", "roles"]
