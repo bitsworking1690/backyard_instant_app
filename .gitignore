@@ -5,6 +5,7 @@ env/
 .env
 *.sqlite3
 .idea/
+.coverage
 # Project asset folders
 media/
 # Database

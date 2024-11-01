@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from cryptography.fernet import Fernet
 from rest_framework import generics
-from accounts.models import CustomUser, BlacklistedToken
+from accounts.models import CustomUser, BlacklistedToken, Role, Permission, Module
 from rest_framework_simplejwt.tokens import RefreshToken
 from accounts.serializers import (
     RegularTokenObtainPairSerializer,
@@ -17,6 +17,11 @@ from accounts.serializers import (
     ErrorResponseSerializer,
     SignUpResponseSerializer,
     ResendOTPResponseSerializer,
+    ModuleSerializer,
+    PermissionSerializer,
+    RoleSerializer,
+    UserRoleAssignmentSerializer,
+    UserListSerializer,
 )
 from accounts.services import AccountService
 from utils.util import response_data_formating
@@ -412,3 +417,266 @@ class GetTokenDetailsView(APIView):
             raise APIError(Error.DEFAULT_ERROR, extra=["Invalid or expired token"])
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+class ModuleListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Module.objects.all()
+    serializer_class = ModuleSerializer
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response("Successful response", ModuleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=ModuleSerializer,
+        responses={
+            201: openapi.Response("Successful response", ModuleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @method_decorator(require_json_content_type)
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+class ModuleDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Module.objects.all()
+    serializer_class = ModuleSerializer
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response("Successful response", ModuleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=ModuleSerializer,
+        responses={
+            200: openapi.Response("Successful response", ModuleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @method_decorator(require_json_content_type)
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={
+            204: openapi.Response("Successful response", ModuleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+
+class PermissionListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Permission.objects.all()
+    serializer_class = PermissionSerializer
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response("Successful response", PermissionSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=PermissionSerializer,
+        responses={
+            201: openapi.Response("Successful response", PermissionSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @method_decorator(require_json_content_type)
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+class PermissionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Permission.objects.all()
+    serializer_class = PermissionSerializer
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response("Successful response", PermissionSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=PermissionSerializer,
+        responses={
+            200: openapi.Response("Successful response", PermissionSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @method_decorator(require_json_content_type)
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={
+            204: openapi.Response("Successful response", PermissionSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+
+class RoleListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response("Successful response", RoleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=RoleSerializer,
+        responses={
+            201: openapi.Response("Successful response", RoleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @method_decorator(require_json_content_type)
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+class RoleDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response("Successful response", RoleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=RoleSerializer,
+        responses={
+            200: openapi.Response("Successful response", RoleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @method_decorator(require_json_content_type)
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={
+            204: openapi.Response("Successful response", RoleSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+
+class UserRoleAssignmentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            return CustomUser.objects.get(pk=pk)
+        except CustomUser.DoesNotExist:
+            raise APIError(Error.DEFAULT_ERROR, extra=["User not Exist"])
+
+    @swagger_auto_schema(
+        request_body=UserRoleAssignmentSerializer,
+        responses={
+            200: openapi.Response("Successful response", UserRoleAssignmentSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    @method_decorator(require_json_content_type)
+    @transaction.atomic
+    def put(self, request, pk):
+        """
+        Update the roles of a specific user.
+
+        Args:
+            request (Request): The incoming HTTP request.
+            pk (int): Primary key of the user to update.
+
+        Returns:
+            Response: The HTTP response with success or error message.
+        """
+
+        user = self.get_object(pk)
+        serializer = UserRoleAssignmentSerializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                response_data_formating(generalMessage="success", data=serializer.data)
+            )
+        return Response(
+            response_data_formating(
+                generalMessage="error", data=None, error=serializer.errors
+            ),
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class UserListView(APIView):
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response("Successful response", UserListSerializer),
+            401: openapi.Response("Unauthorized"),
+        },
+    )
+    def get(self, request):
+        """
+        Retrieve all users with their associated roles.
+
+        Args:
+            request (Request): The incoming HTTP request.
+
+        Returns:
+            Response: The HTTP response containing a list of users and their roles.
+        """
+
+        users = CustomUser.objects.prefetch_related("role").all()
+        serializer = UserListSerializer(users, many=True)
+        return Response(
+            response_data_formating(generalMessage="success", data=serializer.data)
+        )
