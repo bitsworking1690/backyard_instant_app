@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "simple_history",
     "drf_yasg",
     "drf_api_logger",
+    "notifications",
 ]
 
 MIDDLEWARE = [
