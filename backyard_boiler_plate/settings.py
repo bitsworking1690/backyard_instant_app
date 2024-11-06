@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "drf_api_logger",
     "notifications",
+    "django_rest_passwordreset",
 ]
 
 MIDDLEWARE = [

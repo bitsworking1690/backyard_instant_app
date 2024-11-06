@@ -22,3 +22,22 @@ def otp_email(first_name, email, otp):
         raise ValidationError(
             detail=f"Error in sending email {e}", code=status.HTTP_400_BAD_REQUEST
         )
+
+
+def reset_password_email(first_name, email, url):
+    try:
+        subject = "Reset Password"
+
+        plain_message = f"{first_name}: {email}: {url}"
+        from_email = settings.EMAIL_HOST_USER
+        to = email
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=from_email,
+            recipient_list=[to],
+        )
+    except Exception as e:
+        raise ValidationError(
+            detail=f"Error in sending email {e}", code=status.HTTP_400_BAD_REQUEST
+        )
