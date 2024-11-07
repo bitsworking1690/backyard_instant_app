@@ -206,3 +206,40 @@ SWAGGER_SETTINGS = {
 
 DRF_API_LOGGER_DATABASE = True
 DRF_API_LOGGER_METHODS = ["POST", "DELETE", "PUT"]
+
+# Logging Config
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "django.log",
+            "level": "DEBUG",
+            "formatter": "simple",
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {"": {"level": "DEBUG", "handlers": ["file", "console"]}},
+    "formatters": {
+        "simple": {"format": "{asctime}:{levelname} {message}", "style": "{"}
+    },
+}
+
+# sentry settings
+SENTRY_LOGGING = env("SENTRY_LOGGING", default=False)
+
+if SENTRY_LOGGING:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=env("SENTRY_DSN_URL", default="testing"),
+        traces_sample_rate=1.0,
+        _experiments={
+            "continuous_profiling_auto_start": True,
+        },
+    )
