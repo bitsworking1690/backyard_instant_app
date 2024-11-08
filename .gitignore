@@ -6,6 +6,7 @@ env/
 *.sqlite3
 .idea/
 .coverage
+requirements.txt
 # Project asset folders
 media/
 # Database
