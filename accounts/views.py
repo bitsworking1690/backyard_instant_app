@@ -8,6 +8,10 @@ from cryptography.fernet import Fernet
 from rest_framework import generics
 from accounts.models import CustomUser, BlacklistedToken, Role, Permission, Module
 from rest_framework_simplejwt.tokens import RefreshToken
+from django_rest_passwordreset.views import (
+    ResetPasswordRequestToken,
+    ResetPasswordConfirm,
+)
 from accounts.serializers import (
     RegularTokenObtainPairSerializer,
     CustomUserCreateSerializer,
@@ -680,3 +684,17 @@ class UserListView(APIView):
         return Response(
             response_data_formating(generalMessage="success", data=serializer.data)
         )
+
+
+class CustomResetPasswordRequestTokenViewSet(ResetPasswordRequestToken):
+    @method_decorator(require_json_content_type)
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        return response
+
+
+class CustomResetPasswordConfirmViewSet(ResetPasswordConfirm):
+    @method_decorator(require_json_content_type)
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        return response

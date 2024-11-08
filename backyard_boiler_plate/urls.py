@@ -23,6 +23,8 @@ from accounts.views import (
     RegularTokenObtainPairView,
     LogoutView,
     GetTokenDetailsView,
+    CustomResetPasswordRequestTokenViewSet,
+    CustomResetPasswordConfirmViewSet,
 )
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -65,6 +67,16 @@ urlpatterns = [
         "api/v1/auth/token/details/",
         GetTokenDetailsView.as_view(),
         name="get_token_details",
+    ),
+    path(
+        "api/v1/auth/password-reset/",
+        CustomResetPasswordRequestTokenViewSet.as_view(),
+        name="password_reset",
+    ),
+    path(
+        "api/v1/auth/password-reset/confirm/",
+        CustomResetPasswordConfirmViewSet.as_view(),
+        name="password_reset_confirm",
     ),
     path("api/v1/accounts/", include("accounts.urls")),
 ]
