@@ -5,7 +5,7 @@ from accounts.models import CustomUser, Role, Permission, Module
 from accounts.services import AccountService
 from utils.serializers import CustomBaseModelSerializer, CustomBaseSerializer
 from utils.validators import custom_password_validator
-
+from drf_api_logger.models import APILogsModel  # This is the model created by drf-api-logger
 
 class RegularTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -147,3 +147,13 @@ class UserListSerializer(CustomBaseModelSerializer):
     class Meta:
         model = CustomUser
         fields = ["id", "email", "first_name", "last_name", "roles"]
+
+class APILogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = APILogsModel
+        fields = '__all__'
+
+class HistoryDataSerializer(CustomBaseModelSerializer):
+    class Meta:
+        model = APILogsModel
+        fields = '__all__'

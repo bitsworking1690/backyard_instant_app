@@ -26,6 +26,7 @@ from accounts.serializers import (
     RoleSerializer,
     UserRoleAssignmentSerializer,
     UserListSerializer,
+    HistoryDataSerializer,
 )
 from accounts.services import AccountService
 from utils.util import response_data_formating
@@ -40,6 +41,10 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from utils.decorators import require_json_content_type
 from django.utils.decorators import method_decorator
+from drf_api_logger.models import APILogsModel
+from .serializers import APILogSerializer
+from django.apps import apps
+from django.http import JsonResponse
 
 
 class RegularTokenObtainPairView(TokenObtainPairView):
@@ -436,7 +441,7 @@ class ModuleListCreateView(generics.ListCreateAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-
+    
     @swagger_auto_schema(
         request_body=ModuleSerializer,
         responses={
@@ -698,3 +703,67 @@ class CustomResetPasswordConfirmViewSet(ResetPasswordConfirm):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         return response
+
+class APILogsListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = APILogSerializer
+    queryset = APILogsModel.objects.all().order_by('-added_on')
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response("Successful response", APILogSerializer),
+            400: openapi.Response("Error response", ErrorResponseSerializer),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieve all api logs by drf-api-log package.
+
+        Args:
+            request (Request): The incoming HTTP request.
+
+        Returns:
+            Response: The HTTP response containing a list of api logs.
+        """
+        
+        return super().get(request, *args, **kwargs)
+    
+class HistoryDataListView(generics.ListAPIView):
+    permission_class = [IsAuthenticated]
+    serializer_class = HistoryDataSerializer
+
+    @swagger_auto_schema(
+        responses = {
+            200: openapi.Response("Successfull response", HistoryDataSerializer),
+            400: openapi.Response("Successfull response", ErrorResponseSerializer)
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieve history of each model being used in the application.
+
+        Args:
+            request (Request): The incoming HTTP request.
+
+        Returns:
+            Response: The HTTP response containing a dictionary with each key having list of its records.    
+        """
+        
+        # collect all models in the app
+        # check each model has historical records setting
+        # if yes fetch its historical data in a list
+
+        all_models = apps.get_models()
+        historical_data = {}
+        
+        for model in all_models:
+            model_name = model.__name__
+            if model_name.startswith("Historical"):
+                # Fetch all records for the historical model
+                records = model.objects.all().values()  # Retrieve records as dictionaries
+                # Strip "Historical" suffix from the model name and use as dictionary key
+                original_model_name = model_name.replace("Historical", "")
+                historical_data[original_model_name] = list(records)  # Convert QuerySet to list
+
+        # Return the dictionary as a JSON response (optional, for API)
+        return JsonResponse(historical_data, safe=False)

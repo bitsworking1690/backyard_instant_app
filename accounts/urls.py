@@ -13,6 +13,8 @@ from accounts.views import (
     RoleDetailView,
     UserRoleAssignmentView,
     UserListView,
+    APILogsListView,
+    HistoryDataListView,
 )
 
 urlpatterns = [
@@ -40,4 +42,7 @@ urlpatterns = [
         name="user-role-assign-remove",
     ),
     path("users-with-roles/", UserListView.as_view(), name="user-list-with-roles"),
+    path("drf-api-logs/", APILogsListView.as_view(), name="api-logs-list"),
+    path("history-data/", HistoryDataListView.as_view(), name="history-data-list")
+    
 ]
