@@ -17,6 +17,16 @@ def mock_send_otp_email():
 
 
 @pytest.fixture
+def mock_send_reset_password_email():
+    """
+    Fixture to mock the 'reset_password_email' function.
+    """
+
+    with patch("utils.email.reset_password_email") as mock:
+        yield mock
+
+
+@pytest.fixture
 def user_login(client, mock_send_otp_email):
     """
     Fixture to register and log in a participant user.

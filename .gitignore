@@ -6,6 +6,9 @@ env/
 *.sqlite3
 .idea/
 .coverage
+requirements.txt
+django.log
+.vscode/
 # Project asset folders
 media/
 # Database
