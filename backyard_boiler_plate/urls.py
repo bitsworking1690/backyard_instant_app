@@ -79,4 +79,5 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
     path("api/v1/accounts/", include("accounts.urls")),
+    path("api/v1/acl/", include("acl.urls")),  # Include ACL app URLs
 ]

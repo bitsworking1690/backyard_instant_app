@@ -51,6 +51,19 @@ class Role(BaseModel):
     def save(self, *args, **kwargs):
         self.name = self.name.lower()
         return super().save(*args, **kwargs)
+    
+class RolePermission(BaseModel):
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
+    permission = models.ForeignKey(Permission, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+        models.UniqueConstraint(fields=["role", "permission"], name="unique_role_permission")
+        ]
+        ordering = ["-id"]
+
+    def __str__(self):
+        return f"{self.role.name} - {self.permission.name}"
 
 
 class UserManager(BaseUserManager):
